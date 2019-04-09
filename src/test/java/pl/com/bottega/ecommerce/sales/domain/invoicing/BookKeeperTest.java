@@ -1,11 +1,13 @@
 package pl.com.bottega.ecommerce.sales.domain.invoicing;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.hamcrest.core.Is;
-import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.ClientData;
-import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.Id;
-import pl.com.bottega.ecommerce.sales.domain.productscatalog.ProductData;
-import pl.com.bottega.ecommerce.sales.domain.productscatalog.ProductType;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.*;
+import pl.com.bottega.ecommerce.sales.domain.productscatalog.*;
 import pl.com.bottega.ecommerce.sharedkernel.Money;
 
 import java.math.BigDecimal;
@@ -13,34 +15,37 @@ import java.math.BigDecimal;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-public class BookKeeperTest {
+@RunWith(MockitoJUnitRunner.class) public class BookKeeperTest {
 
-    @Test
-    public void invoiceWithOneElement() {
+    private BookKeeper bookKeeper;
+    private InvoiceRequest invoiceRequest;
+    private RequestItem requestItem;
+    @Mock TaxPolicy taxPolicyMock;
 
-        BookKeeper bookKeeper = new BookKeeper(new InvoiceFactory());
-        ClientData clientData = new ClientData(new Id("1"), "Kowalski");
-        InvoiceRequest invoiceRequest = new InvoiceRequest(clientData);
-        invoiceRequest.add(new RequestItem((mock(ProductData.class)), 1, new Money(new BigDecimal(10.5))));
+    @Before public void initialize() {
 
+        bookKeeper = new BookKeeper(new InvoiceFactory());
+        ClientData clientData = new ClientData(Id.generate(), getString());
+        invoiceRequest = new InvoiceRequest(clientData);
+        Product product = new Product(Id.generate(), Money.ZERO, getString(), ProductType.STANDARD);
+        ProductData productData = product.generateSnapshot();
+        requestItem = new RequestItem(productData, 1, Money.ZERO);
+
+    }
+
+    @Test public void invoiceWithOneElement() {
+
+        invoiceRequest.add(requestItem);
         Invoice result = bookKeeper.issuance(invoiceRequest, (productType, net) -> new Tax(new Money(new BigDecimal(0.5)), "description"));
-
         assertThat(result.getItems().size(), Is.is(1));
 
     }
 
+    @Test public void amountOfCallMethodCalculateTax() {
 
-    @Test
-    public void amountOfCallMethodCalculateTax() {
-
-        BookKeeper bookKeeper = new BookKeeper(new InvoiceFactory());
-        ClientData clientData = new ClientData(new Id("1"), "Kowalski");
-        InvoiceRequest invoiceRequest = new InvoiceRequest(clientData);
-        invoiceRequest.add(new RequestItem((mock(ProductData.class)), 1, new Money(new BigDecimal(10.5))));
-        invoiceRequest.add(new RequestItem((mock(ProductData.class)), 2, new Money(new BigDecimal(15.5))));
-        TaxPolicy taxPolicyMock = mock(TaxPolicy.class);
-
-        when(taxPolicyMock.calculateTax(any(ProductType.class), any(Money.class))).thenReturn(new Tax(new Money(new BigDecimal(0.5)), "desctiption"));
+        invoiceRequest.add(requestItem);
+        invoiceRequest.add(requestItem);
+        when(taxPolicyMock.calculateTax(any(ProductType.class), any(Money.class))).thenReturn(new Tax(Money.ZERO, getString()));
 
         bookKeeper.issuance(invoiceRequest, taxPolicyMock);
 
@@ -48,5 +53,8 @@ public class BookKeeperTest {
 
     }
 
+    private String getString() {
+        return "string";
+    }
 
 }
