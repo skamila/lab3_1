@@ -33,6 +33,13 @@ import static org.mockito.Mockito.*;
 
     }
 
+    @Test public void invoiceWithoutElements() {
+
+        Invoice result = bookKeeper.issuance(invoiceRequest, (productType, net) -> new Tax(new Money(new BigDecimal(0.5)), "description"));
+        assertThat(result.getItems().size(), Is.is(0));
+
+    }
+
     @Test public void invoiceWithOneElement() {
 
         invoiceRequest.add(requestItem);
@@ -41,7 +48,7 @@ import static org.mockito.Mockito.*;
 
     }
 
-    @Test public void amountOfCallMethodCalculateTax() {
+    @Test public void amountOfCallMethodCalculateTaxWhenInvoiceHasTwoElements() {
 
         invoiceRequest.add(requestItem);
         invoiceRequest.add(requestItem);
