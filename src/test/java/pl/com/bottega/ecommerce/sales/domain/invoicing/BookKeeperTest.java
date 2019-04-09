@@ -60,6 +60,16 @@ import static org.mockito.Mockito.*;
 
     }
 
+    @Test public void amountOfCallMethodCalculateTaxWhenInvoiceHasNotElements() {
+
+        when(taxPolicyMock.calculateTax(any(ProductType.class), any(Money.class))).thenReturn(new Tax(Money.ZERO, getString()));
+
+        bookKeeper.issuance(invoiceRequest, taxPolicyMock);
+
+        verify(taxPolicyMock, times(0)).calculateTax(any(ProductType.class), any(Money.class));
+
+    }
+
     private String getString() {
         return "string";
     }
