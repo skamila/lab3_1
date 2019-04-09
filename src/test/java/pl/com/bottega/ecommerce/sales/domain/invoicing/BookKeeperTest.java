@@ -28,6 +28,7 @@ import static org.mockito.Mockito.*;
         clientData = new ClientData(Id.generate(), getString());
         invoiceRequest = new InvoiceRequest(clientData);
         requestItem = new RequestItem(productData, 1, Money.ZERO);
+        when(taxPolicyMock.calculateTax(any(ProductType.class), any(Money.class))).thenReturn(new Tax(Money.ZERO, getString()));
 
     }
 
@@ -53,7 +54,6 @@ import static org.mockito.Mockito.*;
 
         invoiceRequest.add(requestItem);
         invoiceRequest.add(requestItem);
-        when(taxPolicyMock.calculateTax(any(ProductType.class), any(Money.class))).thenReturn(new Tax(Money.ZERO, getString()));
 
         bookKeeper.issuance(invoiceRequest, taxPolicyMock);
 
@@ -62,8 +62,6 @@ import static org.mockito.Mockito.*;
     }
 
     @Test public void amountOfCallMethodCalculateTaxWhenInvoiceHasNotElements() {
-
-        when(taxPolicyMock.calculateTax(any(ProductType.class), any(Money.class))).thenReturn(new Tax(Money.ZERO, getString()));
 
         bookKeeper.issuance(invoiceRequest, taxPolicyMock);
 
@@ -85,7 +83,6 @@ import static org.mockito.Mockito.*;
 
         invoiceRequest.add(requestItem);
         ArgumentCaptor<ProductType> productTypeCaptor = ArgumentCaptor.forClass(ProductType.class);
-        when(taxPolicyMock.calculateTax(any(ProductType.class), any(Money.class))).thenReturn(new Tax(Money.ZERO, getString()));
 
         bookKeeper.issuance(invoiceRequest, taxPolicyMock);
 
