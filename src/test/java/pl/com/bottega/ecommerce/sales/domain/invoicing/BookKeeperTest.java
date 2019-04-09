@@ -20,12 +20,13 @@ import static org.mockito.Mockito.*;
     private BookKeeper bookKeeper;
     private InvoiceRequest invoiceRequest;
     private RequestItem requestItem;
+    private ClientData clientData;
     @Mock TaxPolicy taxPolicyMock;
 
     @Before public void initialize() {
 
         bookKeeper = new BookKeeper(new InvoiceFactory());
-        ClientData clientData = new ClientData(Id.generate(), getString());
+        clientData = new ClientData(Id.generate(), getString());
         invoiceRequest = new InvoiceRequest(clientData);
         Product product = new Product(Id.generate(), Money.ZERO, getString(), ProductType.STANDARD);
         ProductData productData = product.generateSnapshot();
@@ -35,7 +36,8 @@ import static org.mockito.Mockito.*;
 
     @Test public void invoiceWithoutElements() {
 
-        Invoice result = bookKeeper.issuance(invoiceRequest, (productType, net) -> new Tax(new Money(new BigDecimal(0.5)), "description"));
+        Invoice result = bookKeeper.issuance(invoiceRequest, taxPolicyMock);
+
         assertThat(result.getItems().size(), Is.is(0));
 
     }
@@ -43,7 +45,9 @@ import static org.mockito.Mockito.*;
     @Test public void invoiceWithOneElement() {
 
         invoiceRequest.add(requestItem);
-        Invoice result = bookKeeper.issuance(invoiceRequest, (productType, net) -> new Tax(new Money(new BigDecimal(0.5)), "description"));
+
+        Invoice result = bookKeeper.issuance(invoiceRequest, taxPolicyMock);
+
         assertThat(result.getItems().size(), Is.is(1));
 
     }
@@ -67,6 +71,16 @@ import static org.mockito.Mockito.*;
         bookKeeper.issuance(invoiceRequest, taxPolicyMock);
 
         verify(taxPolicyMock, times(0)).calculateTax(any(ProductType.class), any(Money.class));
+
+    }
+
+    @Test public void clientOnInvoice() {
+
+        invoiceRequest.add(requestItem);
+
+        Invoice result = bookKeeper.issuance(invoiceRequest, taxPolicyMock);
+
+        assertThat(result.getClient(), Is.is(clientData));
 
     }
 
