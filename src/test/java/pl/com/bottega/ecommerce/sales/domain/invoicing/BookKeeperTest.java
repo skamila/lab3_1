@@ -4,13 +4,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.hamcrest.core.Is;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.*;
 import pl.com.bottega.ecommerce.sales.domain.productscatalog.*;
 import pl.com.bottega.ecommerce.sharedkernel.Money;
-
-import java.math.BigDecimal;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -25,11 +23,10 @@ import static org.mockito.Mockito.*;
 
     @Before public void initialize() {
 
+        ProductData productData = (new Product(Id.generate(), Money.ZERO, getString(), ProductType.STANDARD)).generateSnapshot();
         bookKeeper = new BookKeeper(new InvoiceFactory());
         clientData = new ClientData(Id.generate(), getString());
         invoiceRequest = new InvoiceRequest(clientData);
-        Product product = new Product(Id.generate(), Money.ZERO, getString(), ProductType.STANDARD);
-        ProductData productData = product.generateSnapshot();
         requestItem = new RequestItem(productData, 1, Money.ZERO);
 
     }
@@ -81,6 +78,19 @@ import static org.mockito.Mockito.*;
         Invoice result = bookKeeper.issuance(invoiceRequest, taxPolicyMock);
 
         assertThat(result.getClient(), Is.is(clientData));
+
+    }
+
+    @Test public void calculateTaxParameters() {
+
+        invoiceRequest.add(requestItem);
+        ArgumentCaptor<ProductType> productTypeCaptor = ArgumentCaptor.forClass(ProductType.class);
+        when(taxPolicyMock.calculateTax(any(ProductType.class), any(Money.class))).thenReturn(new Tax(Money.ZERO, getString()));
+
+        bookKeeper.issuance(invoiceRequest, taxPolicyMock);
+
+        verify(taxPolicyMock).calculateTax(productTypeCaptor.capture(), Matchers.anyObject());
+        assertThat(productTypeCaptor.getValue(), Is.is(ProductType.STANDARD));
 
     }
 
