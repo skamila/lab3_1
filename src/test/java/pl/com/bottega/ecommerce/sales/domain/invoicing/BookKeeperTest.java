@@ -10,6 +10,8 @@ import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.*;
 import pl.com.bottega.ecommerce.sales.domain.productscatalog.*;
 import pl.com.bottega.ecommerce.sharedkernel.Money;
 
+import java.util.Date;
+
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -23,7 +25,9 @@ import static org.mockito.Mockito.*;
 
     @Before public void initialize() {
 
-        ProductData productData = (new Product(Id.generate(), Money.ZERO, getString(), ProductType.STANDARD)).generateSnapshot();
+        ProductData productData = new ProductDataBuilder().setProductId(Id.generate())
+                                                          .setName(getString()).setPrice(Money.ZERO)
+                                                          .setSnapshotDate(new Date()).setType(ProductType.STANDARD).build();
         bookKeeper = new BookKeeper(new InvoiceFactory());
         clientData = new ClientData(Id.generate(), getString());
         invoiceRequest = new InvoiceRequest(clientData);
