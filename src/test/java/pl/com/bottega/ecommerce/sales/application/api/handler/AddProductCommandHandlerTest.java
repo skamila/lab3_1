@@ -79,6 +79,14 @@ public class AddProductCommandHandlerTest {
 
     }
 
+    @Test public void methodHandleShouldLoadReservationFromRepository() {
+
+        handler.handle(command);
+
+        verify(reservationRepositoryMock, times(1)).load(any(Id.class));
+
+    }
+
     private String getExemplaryString() {
         return "Ala ma kota.";
     }
