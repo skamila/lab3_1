@@ -63,6 +63,14 @@ public class AddProductCommandHandlerTest {
 
     }
 
+    @Test public void methodHandleShouldNotCallMethodSuggestEquivalentIfProductIsAvailable() {
+
+        handler.handle(command);
+
+        verify(suggestionServiceMock, times(0)).suggestEquivalent(any(Product.class), any(Client.class));
+
+    }
+
     private String getExemplaryString() {
         return "Ala ma kota.";
     }
