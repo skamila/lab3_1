@@ -87,6 +87,14 @@ public class AddProductCommandHandlerTest {
 
     }
 
+    @Test public void methodHandleShouldLoadProductFromRepository() {
+
+        handler.handle(command);
+
+        verify(productRepositoryMock, times(1)).load(any(Id.class));
+
+    }
+
     private String getExemplaryString() {
         return "Ala ma kota.";
     }
